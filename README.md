@@ -122,20 +122,34 @@ The engine supports various document types, including:
 - [Solving Domain-Specific Problems using LLMs](https://www.kaggle.com/whitepaper-solving-domains-specific-problems-using-llms)
 
 
-## Example Workflow
+## Example Commands
 
-Below is a complete example workflow showing how to set up the entire RAG environment with the Google Gen AI Intensive course materials:
+Below is a complete example workflow showing how to set up the entire environment:
 
-### 1. Create GCS Buckets
+### 1. List all GCS buckets
 
 ```text
-Create the following Google Cloud Storage buckets "ur-agent-data-source" and "ur-agent-knowledge-base" for my project, using the default settings (location: US, storage class: STANDARD) for all of them. Do not ask for confirmation for each bucket.
+List all GCS buckets and its information.
 ```
 
-### 2. Upload PDF Files to GCS Buckets
+### 2. Create a bucket for Foundation LLMs
 
 ```text
-Upload the file "RFI.pdf" to the GCS bucket gs://ur-agent-data-source/ and use "RFI.pdf" as the destination blob name. Do not ask for confirmation.
+Create a GCS bucket named "ur-agent-data-source".
+```
 
-Upload the file "RFP.pdf" to the GCS bucket gs://ur-agent-data-source/ and use "RFP.pdf" as the destination blob name. Do not ask for confirmation.
+### 3. Upload a document
+
+```text
+Upload the file "RFP.pdf" to GCS bucket "gs://ur-agent-data-source/" and keep the same destination blob name. Do not ask for confirmation.
+```
+
+### 4. Create a RAG corpus
+```text
+Create a RAG corpus named "ur-agent-knowledge-base" with the same description.
+```
+
+### 5. Import a document into RAG corpus
+```text
+Import all the files in "gs://ur-agent-data-source/" into the RAG corpus "ur-agent-knowledge-base".
 ```
