@@ -2,10 +2,11 @@
 The main User Requirement (UR) Generation Agent.
 """
 
-from google.adk.agents import LlmAgent
+from google.adk.agents import Agent
 from google.adk.tools.load_memory_tool import load_memory_tool
 
 from src.tools import (
+  corpus_tools,
   storage_tools,
   extract_information,
   generate_user_requirements,
@@ -19,7 +20,7 @@ from src.config import (
 )
 
 # Create UR agent
-agent = LlmAgent(
+agent = Agent(
     name=AGENT_NAME,
     model=AGENT_MODEL,
     description="Agent responsible for extracting information from documents, generating, and updating user requirements.",
@@ -64,6 +65,23 @@ agent = LlmAgent(
         storage_tools.get_bucket_details_tool,
         storage_tools.upload_file_gcs_tool,
         storage_tools.list_blobs_tool,
+
+        # RAG corpus management tools
+        corpus_tools.create_corpus_tool,
+        corpus_tools.update_corpus_tool,
+        corpus_tools.list_corpora_tool,
+        corpus_tools.get_corpus_tool,
+        corpus_tools.delete_corpus_tool,
+        corpus_tools.import_document_tool,
+        
+        # RAG file management tools
+        corpus_tools.list_files_tool,
+        corpus_tools.get_file_tool,
+        corpus_tools.delete_file_tool,
+        
+        # RAG query tools
+        corpus_tools.query_rag_corpus_tool,
+        corpus_tools.search_all_corpora_tool,
 
         # UR Agent integrations
         extract_information.extract_information_tool,
