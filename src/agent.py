@@ -6,9 +6,7 @@ from google.adk.agents import Agent
 from google.adk.tools.load_memory_tool import load_memory_tool
 
 from src.tools import (
-  corpus_tools,
   storage_tools,
-  extract_information,
   generate_user_requirements,
   update_user_requirements,
 ) 
@@ -74,25 +72,7 @@ agent = Agent(
         storage_tools.upload_file_gcs_tool,
         storage_tools.list_blobs_tool,
 
-        # RAG corpus management tools
-        corpus_tools.create_corpus_tool,
-        corpus_tools.update_corpus_tool,
-        corpus_tools.list_corpora_tool,
-        corpus_tools.get_corpus_tool,
-        corpus_tools.delete_corpus_tool,
-        corpus_tools.import_document_tool,
-        
-        # RAG file management tools
-        corpus_tools.list_files_tool,
-        corpus_tools.get_file_tool,
-        corpus_tools.delete_file_tool,
-        
-        # RAG query tools
-        corpus_tools.query_rag_corpus_tool,
-        corpus_tools.search_all_corpora_tool,
-
         # UR Agent integrations
-        extract_information.extract_information_tool,
         generate_user_requirements.generate_user_requirements_tool,
         update_user_requirements.update_user_requirements_tool,
 
