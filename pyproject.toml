@@ -1,0 +1,10 @@
+[project]
+name = "google-adk-ur-agent"
+version = "0.1.0"
+description = "🧠 ADK Hackathon - Multi-Agent AI Assistant Platform: UR Agent"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk>=1.1.1",
+    "litellm>=1.72.0",
+]
