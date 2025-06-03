@@ -1,5 +1,6 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from google.adk.tools import ToolContext, FunctionTool
+from google.adk.agents import Agent
 from pydantic import BaseModel, Field
 
 class ExtractedDetail(BaseModel):
@@ -21,18 +22,17 @@ class ExtractionOutput(BaseModel):
     summary_of_extraction: Optional[str] = Field(None, description="A brief summary of what was focused on during this extraction pass.")
 
 def extract_information(
-    raw_text_content: str,
     extraction_focus: str,
+    corpus_id: Optional[str] = None,
     document_id: Optional[str] = None
 ) -> ExtractionOutput:
     """
-    Processes raw text content to extract specific, structured details based on a given focus.
+    Retrieves relevant information from the RAG corpus based on the extraction focus
+    and uses an LLM to extract specific, structured details from the retrieved content.
 
-    This tool is intended to be called by an LLM Agent (like Google ADK's LlmAgent).
-    The agent's primary LLM performs the actual natural language understanding and extraction.
-    This function defines the contract: the expected inputs and, critically, the
+    This tool orchestrates a RAG query and provides the retrieved context to an LLM
+    for structured information extraction. Defines the structured format (ExtractionOutput)
     structured format (ExtractionOutput) that the LLM's output should conform to
-    when it decides to use this tool.
 
     The calling LLM agent should be instructed on how to interpret the 'extraction_focus'
     to guide its extraction process from the 'raw_text_content'.
@@ -44,6 +44,8 @@ def extract_information(
                           - "Extract all functional and non-functional requirements."
                           - "Identify all stakeholders and their roles mentioned."
                           - "List all decisions made and their justifications."
+        corpus_id: An optional ID of the specific RAG corpus to query. If not provided,
+                   the tool will search across all available corpora.
         document_id: An optional identifier for the source document.
 
     Returns:
@@ -51,17 +53,16 @@ def extract_information(
         the content that will populate this Pydantic model. ADK handles parsing the
         LLM's JSON output into this model.
     """
-
-    print(f"Tool 'extract_information' invoked for document_id: {document_id}")
-    print(f"Extraction focus: '{extraction_focus}'")
-    print(f"Processing text of length: {len(raw_text_content)} characters.")
+    
+    # ===================
+    # Code the logic here
+    # ===================
 
     return ExtractionOutput(
         source_document_id=document_id,
         extracted_details=[
-            # ExtractedDetail(category="Placeholder", statement="LLM to provide actual extracted data.")
         ],
-        summary_of_extraction=f"Placeholder summary for focus: {extraction_focus}. LLM to provide."
+        summary_of_extraction=f"RAG retrieval status: {retrieval_status}. Message: {retrieval_message}. Extraction focus: {extraction_focus}. LLM needs to analyze retrieved content and populate details."
     )
 
 # Create FunctionTools from the functions
