@@ -6,6 +6,8 @@ to be used with the Agent Development Kit (ADK).
 from google.cloud import storage
 from google.api_core.exceptions import GoogleAPIError
 from google.adk.tools import ToolContext, FunctionTool
+import PyPDF2
+import io
 from typing import Dict, Any, Optional
 import logging
 from src.config import (
@@ -383,9 +385,51 @@ def upload_file_to_gcs(
             "message": f"An unexpected error occurred: {str(e)}"
         }
 
+def read_pdf_file_from_gcs(
+    bucket_name: str,
+    file_name: str,
+) -> Dict[str, Any]:
+    """Reads text content from a PDF file in Google Cloud Storage.
+
+    Args:
+        bucket_name: The name of the GCS bucket.
+        file_name: The name of the PDF file within the bucket.
+
+    Returns:
+        A dictionary containing the status and text content of the PDF,
+        or an error message if reading fails.
+    """
+    try:
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        pdf_data = blob.download_as_bytes()
+
+        with io.BytesIO(pdf_data) as pdf_file:
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            num_pages = len(pdf_reader.pages)
+            text_content = ""
+            for page_num in range(num_pages):
+                page = pdf_reader.pages[page_num]
+                text_content += page.extract_text()
+
+        return {
+            "status": "success",
+            "text_content": text_content,
+            "message": f"Successfully read text from gs://{bucket_name}/{file_name}"
+        }
+    except Exception as e:
+        error_message = f"Error reading PDF from gs://{bucket_name}/{file_name}: {e}"
+        logging.error(error_message)
+        return {
+            "status": "error",
+            "error_message": str(e),
+            "message": error_message
+        }
+
 # Create FunctionTools from the functions
 create_bucket_tool = FunctionTool(create_gcs_bucket)
 list_buckets_tool = FunctionTool(list_gcs_buckets)
 get_bucket_details_tool = FunctionTool(get_bucket_details)
 list_blobs_tool = FunctionTool(list_blobs_in_bucket)
 upload_file_gcs_tool = FunctionTool(upload_file_to_gcs)
+read_pdf_tool = FunctionTool(read_pdf_file_from_gcs)

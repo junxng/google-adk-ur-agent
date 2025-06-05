@@ -71,6 +71,7 @@ agent = Agent(
         storage_tools.get_bucket_details_tool,
         storage_tools.upload_file_gcs_tool,
         storage_tools.list_blobs_tool,
+        storage_tools.read_pdf_tool,
 
         # UR Agent integrations
         generate_user_requirements.generate_user_requirements_tool,

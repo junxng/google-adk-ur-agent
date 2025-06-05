@@ -10,6 +10,7 @@ from .storage_tools import (
     get_bucket_details_tool,
     upload_file_gcs_tool,
     list_blobs_tool,
+    read_pdf_tool,
 )
 
 from .generate_user_requirements import generate_user_requirements_tool
