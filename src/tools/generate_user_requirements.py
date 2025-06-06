@@ -22,76 +22,71 @@ class RequirementCoverageEnum(str, Enum):
     NO = "No"
 
 class UserRequirement(BaseModel):
-    """
-    Represents a single generated user requirement with detailed attributes.
-    Describes what a user needs to be able to *do* with a system, product, or service.
-    """
-    id: str = Field(..., description="Unique identifier for the user requirement (e.g., USR0150).", examples=["USR0150"])
+    id: str = Field(..., description="Unique identifier for the user requirement (e.g., USR0150).")
     name: str = Field(..., description="A concise overview or name for the user requirement (VARCHAR).")
-    source: str = Field(..., description="The name of the source file or document from which this requirement was derived (CHAR).")
-    type: RequirementTypeEnum = Field(..., description="Categorizes the origin or nature of the requirement (Original or Change Request).")
-    scope: RequirementScopeEnum = Field(..., description="Defines whether the requirement is part of the current project, release, or sprint (In-Scope or Out-Scope).")
-    detail: str = Field(..., description="The actual detailed description of the user requirement – what the user needs to do.")
-    priority: RequirementPriorityEnum = Field(..., description="The relative importance of this user requirement compared to others (High, Medium, Low).")
-    covered_usr: RequirementCoverageEnum = Field(..., description="Indicates whether this requirement is covered by or duplicates another existing user requirement/story (Yes or No).")
+    source: str = Field(..., description="The identifier (e.g., GCS URI) of the source file from which this requirement was derived.")
+    type: RequirementTypeEnum = Field(..., description="Categorizes the origin or nature of the requirement.")
+    scope: RequirementScopeEnum = Field(..., description="Defines whether the requirement is part of the current project.")
+    detail: str = Field(..., description="The detailed description of the user requirement.")
+    priority: RequirementPriorityEnum = Field(..., description="The relative importance of this user requirement.")
+    covered_usr: RequirementCoverageEnum = Field(..., description="Indicates coverage by another existing requirement.")
 
 class FinalUserRequirementsOutput(BaseModel):
-    """
-    Defines the structured output for the final set of user requirements.
-    """
-    document_id: Optional[str] = Field(None, description="Identifier for the source document(s) from which requirements were derived.")
-    requirements_list: List[UserRequirement] = Field(..., description="A list of generated user requirements.")
-    generation_summary: Optional[str] = Field(None, description="Summary of the UR generation process and any overall observations.")
+    document_id: Optional[str] = Field(None, description="Identifier (e.g., GCS URI) for the source document, supplied by the agent.")
+    extracted_document_content: Optional[str] = Field(None, description="The text content extracted from the source document (supplied by the agent after using an extraction tool).")
+    requirements_list: List[UserRequirement] = Field(..., description="A list of user requirements. The calling LLM is responsible for populating this based on the extracted_document_content.")
+    generation_summary: Optional[str] = Field(None, description="Summary of the UR generation process. The calling LLM is responsible for generating this.")
+    error_message: Optional[str] = Field(None, description="Optional field for the LLM to indicate any issues encountered during its generation process based on the provided content.")
 
 def generate_user_requirements(
-    extracted_information: Dict[str, Any], # This would typically be the output from extract_information_tool
-    generation_guidelines: Optional[str] = "Generate comprehensive user requirements based on the extracted information, ensuring all fields of the UserRequirement model are considered."
+    document_content: str,
+    document_id: Optional[str],
+    generation_guidelines: Optional[str] = "Generate comprehensive user requirements based on the document content, ensuring all fields of the UserRequirement model are considered."
 ) -> FinalUserRequirementsOutput:
     """
-    Generates final user requirements based on previously extracted information and guidelines.
+    Structures input document content and ID to facilitate user requirement generation by an LLM.
 
-    The calling LLM Agent is responsible for using the extracted_information (likely from
-    the extract_specific_details_from_text tool) and any guidelines to formulate
-    the final user requirements, populating all fields of the UserRequirement model.
-    ADK handles parsing the LLM's JSON output into this model.
-
-    Args:
-        extracted_information: A dictionary or Pydantic model instance containing structured
-                               information previously extracted from source documents
-                               (e.g., the output of `extract_specific_details_from_text`).
-        generation_guidelines: Specific instructions or focus for generating the user requirements.
-                               The LLM should be prompted to consider all new fields such as
-                               'id', 'name', 'source', 'type', 'scope', 'detail', 'priority', and 'covered_usr'.
-
-    Returns:
-        A FinalUserRequirementsOutput object.
+    Workflow Expectation:
+    1. The agent first calls an extraction tool (e.g., 'extract_information') to get 'extracted_text' from a GCS URI.
+    2. The agent then calls this tool ('generate_user_requirements'), passing the 'extracted_text' as 'document_content'
+       and the GCS URI as 'document_id'.
+    3. This tool returns a structure containing this 'document_content' and 'document_id' along with placeholders.
+    4. The agent uses this output to perform detailed analysis and formulate the actual 'requirements_list'
+       and 'generation_summary'.
     """
     print(f"Tool 'generate_user_requirements' invoked.")
+    print(f"Document ID received: {document_id if document_id else 'N/A'}")
+    # Log first 100 chars for tracing, full content is available in 'document_content' variable
+    print(f"Document Content received (first 100 chars): {document_content[:100]}...")
     print(f"Guidelines: {generation_guidelines}")
-    print(f"Based on extracted info from document ID: {extracted_information.get('source_document_id', 'N/A')}, summary: {extracted_information.get('summary_of_extraction', 'N/A')}")
 
-    # Placeholder: The LLM would generate this based on its understanding
-    # of the extracted_information and guidelines, creating a list of UserRequirement instances.
-    # Example placeholder for one requirement (LLM would generate the actual data and list):
-    # example_req = UserRequirement(
-    #     id="USR001",
-    #     name="User Authentication Overview",
-    #     source=extracted_information.get("source_document_id", "Unknown_Source.pdf"),
-    #     type=RequirementTypeEnum.ORIGINAL,
-    #     scope=RequirementScopeEnum.IN_SCOPE,
-    #     detail="The system must allow users to authenticate using a username and password.",
-    #     priority=RequirementPriorityEnum.HIGH,
-    #     covered_usr=RequirementCoverageEnum.NO
-    # )
-
-    return FinalUserRequirementsOutput(
-        document_id=extracted_information.get("source_document_id"),
-        requirements_list=[
-            # example_req # LLM would generate a list of such requirements.
-            # For the tool's direct execution (without LLM filling it), it returns an empty list or example.
-        ],
-        generation_summary="Placeholder: LLM to provide summary of UR generation. Ensure all UserRequirement fields are populated."
+    # Example placeholder requirement. The LLM agent will replace this.
+    example_req_list = [
+        UserRequirement(
+            id="USR_LLM_GENERATED_001",
+            name="Placeholder: LLM to define requirement name",
+            source=document_id if document_id else "Unknown_Source",
+            type=RequirementTypeEnum.ORIGINAL,
+            scope=RequirementScopeEnum.IN_SCOPE,
+            detail="Placeholder: LLM to provide detailed requirement based on the 'extracted_document_content'.",
+            priority=RequirementPriorityEnum.MEDIUM,
+            covered_usr=RequirementCoverageEnum.NO
+        )
+    ]
+    
+    summary = (
+        "Placeholder summary: The LLM should replace this. "
+        "Analyze the 'extracted_document_content' (which is the 'document_content' argument passed to this tool) "
+        "to generate a list of UserRequirement objects and a meaningful summary. "
+        "Describe how the content was used, the number of requirements, and any observations."
     )
 
-# Create FunctionTools from the functions
+    return FinalUserRequirementsOutput(
+        document_id=document_id,
+        extracted_document_content=document_content,
+        requirements_list=example_req_list, # LLM (Agent) is responsible for generating the actual list
+        generation_summary=summary, # LLM (Agent) is responsible for generating the actual summary
+        error_message=None # LLM can populate this in its subsequent processing if needed
+    )
+
 generate_user_requirements_tool = FunctionTool(generate_user_requirements)

@@ -6,7 +6,7 @@ to be used with the Agent Development Kit (ADK).
 from google.cloud import storage
 from google.api_core.exceptions import GoogleAPIError
 from google.adk.tools import ToolContext, FunctionTool
-import PyPDF2
+from pypdf import PdfReader
 import io
 from typing import Dict, Any, Optional
 import logging
@@ -402,21 +402,45 @@ def read_pdf_file_from_gcs(
     try:
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(file_name)
+
+        if not blob.exists():
+            error_message = f" File doesn't exist: gs://{bucket_name}/{file_name}"
+            logging.error(error_message)
+            return {
+                "status": "error",
+                "error_message": "File doesn't exist.",
+                "message": error_message
+            }
+
         pdf_data = blob.download_as_bytes()
 
         with io.BytesIO(pdf_data) as pdf_file:
-            pdf_reader = PyPDF2.PdfReader(pdf_file)
-            num_pages = len(pdf_reader.pages)
+            pdf_reader = PdfReader(pdf_file)
+
+            if pdf_reader.is_encrypted:
+                try:
+                    pdf_reader.decrypt('')
+                except Exception as e:
+                    error_message = f"Cannot decrypt the PDF file: {e}"
+                    logging.error(error_message)
+                    return {
+                        "status": "error",
+                        "error_message": str(e),
+                        "message": error_message
+                    }
+
             text_content = ""
-            for page_num in range(num_pages):
-                page = pdf_reader.pages[page_num]
-                text_content += page.extract_text()
+            for page in pdf_reader.pages:
+                text = page.extract_text()
+                if text:
+                    text_content += text
 
         return {
             "status": "success",
             "text_content": text_content,
-            "message": f"Successfully read text from gs://{bucket_name}/{file_name}"
+            "message": f"Successfully read PDF file from gs://{bucket_name}/{file_name}"
         }
+
     except Exception as e:
         error_message = f"Error reading PDF from gs://{bucket_name}/{file_name}: {e}"
         logging.error(error_message)

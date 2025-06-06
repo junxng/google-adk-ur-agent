@@ -5,8 +5,9 @@ Configuration settings for the UR agent.
 import os
 
 # Google Cloud Project Settings
-PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
 LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+PROCESSOR_ID = os.environ.get("GOOGLE_PROCESSOR_ID", "")
 
 # GCS Storage Settings
 GCS_DEFAULT_STORAGE_CLASS = "STANDARD"
@@ -23,4 +24,3 @@ AGENT_OUTPUT_KEY = "last_response"
 # Logging Settings
 LOG_LEVEL = "INFO"
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-
